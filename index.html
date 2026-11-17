@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Adoquines Ecológicos con PET — Recorrido 3D Cusco | Grupo 01</title>
+  <meta name="description" content="Entorno 3D interactivo de una calle de San Sebastián, Cusco (100 m) con veredas de adoquines de concreto y PET reciclado triturado (5%, 10% y 15%) e inspector normativo NTP 399.611.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- Lienzo 3D WebGL -->
+    <canvas id="scene-canvas" aria-label="Escena tridimensional interactiva de veredas con adoquines de concreto y PET en San Sebastián, Cusco"></canvas>
+
+    <!-- Barra Superior Compacta (< 12% altura) -->
+    <header class="top-bar" role="banner">
+      <div class="brand-cluster">
+        <span class="brand-badge" aria-hidden="true">PET 3D</span>
+        <div class="brand-titles">
+          <h1>Veredas PET • Cusco</h1>
+          <p class="subtitle">San Sebastián • Tramo 100 m • NTP 399.611</p>
+        </div>
+      </div>
+
+      <nav class="mode-switch" aria-label="Modos de visualización 3D">
+        <button id="btn-mode-street" type="button" class="mode-btn is-active" aria-pressed="true">
+          <span class="btn-ico" aria-hidden="true">🚶</span>
+          <span>Calle Cusco (100 m)</span>
+        </button>
+        <button id="btn-mode-paver" type="button" class="mode-btn" aria-pressed="false">
+          <span class="btn-ico" aria-hidden="true">🧱</span>
+          <span>Bloque PET 3D</span>
+        </button>
+      </nav>
+
+      <div class="top-actions">
+        <button id="btn-toggle-specs" type="button" class="icon-pill" aria-expanded="true" aria-controls="norm-panel" title="Mostrar u ocultar ficha técnica">
+          📋 Norma
+        </button>
+        <button id="btn-help" type="button" class="icon-pill" popovertarget="help-popover" title="Ayuda y controles">
+          ❓ Ayuda
+        </button>
+      </div>
+    </header>
+
+    <!-- Popover Nativo de Ayuda (Modern Web Guidance) -->
+    <aside id="help-popover" popover="auto" class="help-popover" aria-label="Guía rápida de controles">
+      <div class="popover-head">
+        <h2>Controles (Móvil, Tablet y PC)</h2>
+        <button type="button" class="close-pop" popovertarget="help-popover" popovertargetaction="hide" aria-label="Cerrar ayuda">✕</button>
+      </div>
+      <ul>
+        <li><strong>📱 Celular / Tablet:</strong> Usa el <strong>joystick izquierdo</strong> para caminar sobre la vereda o bajar a la pista, y el <strong>joystick derecho</strong> para mirar 360° o rotar el adoquín. Toca <strong>🔍 Ver Suelo</strong> para acercarte al detalle del PET.</li>
+        <li><strong>💻 Laptop / PC:</strong> Camina con <strong>W A S D</strong> o <strong>Flechas</strong>, arrastra con el <strong>Mouse</strong> para girar la vista y usa la <strong>Rueda</strong> (o el control de Zoom) para acercarte a los adoquines.</li>
+        <li><strong>🧱 Bloque PET 3D:</strong> Inspecciona un solo adoquín levitando (20 × 10 × 6 cm) con cotas reales, rayos X de escamas PET y dosificaciones 0%–15%.</li>
+      </ul>
+    </aside>
+
+    <!-- Panel Izquierdo de Normativa y Parámetros Técnicos -->
+    <section id="norm-panel" class="norm-panel" aria-label="Especificaciones técnicas y normativa NTP 399.611">
+      <div class="panel-header">
+        <span class="norm-chip">NTP 399.611 • TIPO I PEATONAL</span>
+        <button id="btn-close-panel" type="button" class="panel-min-btn" aria-label="Minimizar panel técnico">−</button>
+      </div>
+
+      <h2 class="panel-title">Adoquín con PET Triturado</h2>
+
+      <!-- Selector de Dosificación VI -->
+      <div class="dose-selector" role="group" aria-label="Dosificación de PET reciclado">
+        <span class="dose-label">Sustitución de arena fina:</span>
+        <div class="dose-pills">
+          <button type="button" class="dose-btn" data-dose="0">0% Patrón</button>
+          <button type="button" class="dose-btn" data-dose="5">5% PET</button>
+          <button type="button" class="dose-btn is-selected" data-dose="10">10% PET</button>
+          <button type="button" class="dose-btn" data-dose="15">15% PET</button>
+        </div>
+      </div>
+
+      <dl class="specs-list">
+        <div class="spec-row">
+          <dt>Dimensiones nominales</dt>
+          <dd>20.0 × 10.0 × 6.0 cm <small>(200×100×60 mm)</small></dd>
+        </div>
+        <div class="spec-row">
+          <dt>Resistencia mínima (NTP 399.611)</dt>
+          <dd class="highlight-cyan">≥ 31 MPa <small>(320 kg/cm² prom. 3 u. | ≥ 28 MPa ind.)</small></dd>
+        </div>
+        <div class="spec-row">
+          <dt>Absorción máxima (24 h)</dt>
+          <dd>≤ 6.0% prom. <small>(≤ 7.5% ind. — NTP 399.604)</small></dd>
+        </div>
+        <div class="spec-row">
+          <dt>Peso volumétrico (ASTM C140)</dt>
+          <dd id="spec-density">~2,010 kg/m³ <small>(Aligerado ~7.8% vs patrón)</small></dd>
+        </div>
+        <div class="spec-row">
+          <dt>Desempeño estimado (<span id="spec-dose-tag">10% PET</span>)</dt>
+          <dd id="spec-status" class="status-ok">Dosis óptima esperada: cumple ≥ 31 MPa</dd>
+        </div>
+      </dl>
+
+      <!-- Controles extra del inspector / suelo -->
+      <div class="panel-controls">
+        <div class="zoom-row">
+          <label for="zoom-slider">🔍 Acercamiento / Zoom</label>
+          <input id="zoom-slider" type="range" min="0" max="100" value="25">
+        </div>
+        <div class="action-row" id="street-actions">
+          <button id="btn-inspect-ground" type="button" class="action-chip">🔍 Ver Suelo de Cerca</button>
+          <button id="btn-cross-street" type="button" class="action-chip">🚸 Cruzar Vereda</button>
+        </div>
+        <div class="action-row is-hidden" id="paver-actions">
+          <button id="btn-toggle-spin" type="button" class="action-chip">⏸ Pausar Giro</button>
+          <button id="btn-toggle-xray" type="button" class="action-chip">✨ Ver PET Interno</button>
+          <button id="btn-toggle-dims" type="button" class="action-chip is-on">📏 Cotas (20×10×6)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Telemetría compacta superior derecha (Posición en los 100 m + Superficie actual) -->
+    <div class="telemetry-pill" aria-live="polite">
+      <span id="tel-surface" class="tel-badge">Vereda Izq. (+18 cm)</span>
+      <span id="tel-pos">Tramo: 12.0 m / 100 m</span>
+    </div>
+
+    <!-- Indicador de zona visual cuando estás sobre adoquines -->
+    <div id="toast-msg" class="toast-msg" role="status" aria-live="polite"></div>
+
+    <!-- Controles Dual Joystick (Izquierdo: Caminar | Derecho: Vista 360° / Rotar Bloque) -->
+    <div class="joysticks-layer">
+      <!-- Joystick Izquierdo: Avance / Retroceso / Lateral -->
+      <div class="joystick-dock joystick-left">
+        <div id="joy-left" class="joystick-base" role="application" aria-label="Joystick izquierdo para caminar por la calle">
+          <div class="joystick-crosshair" aria-hidden="true"></div>
+          <div id="joy-left-knob" class="joystick-knob">
+            <span>🚶</span>
+          </div>
+        </div>
+        <span class="joy-caption" id="joy-left-label">CAMINAR</span>
+      </div>
+
+      <!-- Botón flotante rápido móvil para agacharse y ver adoquines -->
+      <div class="center-quick-actions">
+        <button id="btn-crouch-mobile" type="button" class="quick-pill" title="Acercar cámara al adoquinado">
+          🔍 Zoom Adoquín
+        </button>
+      </div>
+
+      <!-- Joystick Derecho: Vista / Cámara / Rotar Bloque -->
+      <div class="joystick-dock joystick-right">
+        <div id="joy-right" class="joystick-base" role="application" aria-label="Joystick derecho para mover la vista o rotar el adoquín">
+          <div class="joystick-crosshair" aria-hidden="true"></div>
+          <div id="joy-right-knob" class="joystick-knob knob-cyan">
+            <span>👁️</span>
+          </div>
+        </div>
+        <span class="joy-caption" id="joy-right-label">VISTA 360°</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
